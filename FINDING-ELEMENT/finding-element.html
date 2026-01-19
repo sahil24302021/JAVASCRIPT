@@ -1,0 +1,40 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finding elements</title>
+    <style>
+        .fname {
+            display: inline-block;
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div id="box" class="section">
+        Hello
+        <span >World</span>
+
+    </div>
+    <script>
+        let spanTag = document.querySelector("span");
+        let parentNode = document.querySelector("#box");
+        let newChild = document.createElement("p");
+        newChild.textContent = "SAHIL";
+        // newChild.style.display = "inline-block";
+        // newChild.style.color = "blue";
+        newChild.classList.add('fname');
+        parentNode.replaceChild(newChild, spanTag);
+
+        //parentNode.removeChild(spanTag);
+        // let parentNode = document.querySelector("#box");
+        // let spanTag = parentNode.querySelector("span");
+        // parentNode.removeChild(spanTag);
+        // console.log(parentNode.innerHTML);
+        // console.log(parentNode.innerText);
+        // console.log(parentNode.inner);
+
+    </script>
+
+</body>
+</html>
