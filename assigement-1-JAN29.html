@@ -1,0 +1,21 @@
+<html lang="en">
+  <body>
+    <h2>Weather</h2>
+    <p id="temp">Loading...</p>
+    <script>
+      async function fetchWeather() {
+        try {
+          let response = await fetch(
+            "https://api.open-meteo.com/v1/forecast?latitude=28.61&longitude=77.20&current_weather=true"
+          );
+          let data = await response.json();
+          document.getElementById("temp").innerText =
+            "Temperature: " + data.current_weather.temperature + "°C";
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      fetchWeather();
+    </script>
+  </body>
+</html>

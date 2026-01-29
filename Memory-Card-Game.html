@@ -1,0 +1,187 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Card Game - JS Mini Project</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            background-color: #2c3e50;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .stats-container {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        /* 1. Open the Game - You see a grid */
+        .memory-game {
+            width: 640px;
+            height: 480px;
+            display: flex;
+            flex-wrap: wrap;
+            perspective: 1000px;
+        }
+
+        .memory-card {
+            width: calc(25% - 10px);
+            height: calc(33.333% - 10px);
+            margin: 5px;
+            position: relative;
+            transform: scale(1);
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            cursor: pointer;
+        }
+
+        .memory-card:active {
+            transform: scale(0.97);
+            transition: transform 0.2s;
+        }
+
+   
+        .memory-card.flip {
+            transform: rotateY(180deg);
+        }
+
+        .front-face,
+        .back-face {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            position: absolute;
+            border-radius: 5px;
+            background: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            backface-visibility: hidden;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.5);
+        }
+
+        .front-face {
+            transform: rotateY(180deg);
+            background-color: #fff;
+        }
+
+        .back-face {
+            background-color: #3498db;
+            color: white;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Memory Card Game</h1>
+    
+    <div class="stats-container">
+        Attempts: <span id="attempts-count">0</span>
+    </div>
+
+    <section class="memory-game" id="grid-container">
+        </section>
+
+    <script>
+    // --- CARD DATA ---
+    const cardData = [
+        { name: 'apple', icon: '🍎' },
+        { name: 'banana', icon: '🍌' },
+        { name: 'grapes', icon: '🍇' },
+        { name: 'watermelon', icon: '🍉' },
+        { name: 'cherry', icon: '🍒' },
+        { name: 'pineapple', icon: '🍍' }
+    ];
+
+    // Create pairs & shuffle (Grid Logic)
+    const cards = [...cardData, ...cardData].sort(() => Math.random() - 0.5);
+
+    const grid = document.getElementById('grid-container');
+    const attemptsText = document.getElementById('attempts-count');
+
+    // --- GAME STATE (State Matching) ---
+    let firstCard = null;
+    let secondCard = null;
+    let lockBoard = false;
+    let attempts = 0;
+    let matches = 0;
+
+    // --- 1. OPEN GAME ---
+    cards.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'memory-card';
+        card.dataset.name = item.name;
+        card.innerHTML = `
+            <div class="front-face">${item.icon}</div>
+            <div class="back-face">?</div>
+        `;
+
+        card.addEventListener('click', flipCard);
+        grid.appendChild(card);
+    });
+
+    // --- 2. FLIP CARDS ---
+    function flipCard() {
+        if (lockBoard || this === firstCard) return;
+        this.classList.add('flip');
+        if (!firstCard) {
+            firstCard = this;
+            return;
+        }
+        secondCard = this;
+        attempts++;
+        attemptsText.innerText = attempts;
+
+        checkMatch();
+    }
+    // --- 3. MATCH LOGIC ---
+    function checkMatch() {
+        if (firstCard.dataset.name === secondCard.dataset.name) {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            matches++;
+            resetTurn();
+            checkWin();
+        } else {
+            lockBoard = true;
+            setTimeout(() => {
+                firstCard.classList.remove('flip');
+                secondCard.classList.remove('flip');
+                resetTurn();
+            }, 1000); // Timeout
+        }
+    }
+    // --- RESET STATE ---
+    function resetTurn() {
+        firstCard = null;
+        secondCard = null;
+        lockBoard = false;
+    }
+    // --- 5. WIN GAME ---
+    function checkWin() {
+        if (matches === cardData.length) {
+            setTimeout(() => {
+                alert(`You Won!\nTotal Attempts: ${attempts}`);
+            }, 500);
+        }
+    }
+</script>
+</body>
+</html>

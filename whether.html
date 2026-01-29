@@ -1,0 +1,39 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        // fetch("https://api.open-meteo.com/v1/forecast?lnd_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m")atitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m")
+        fetch("https://jsonplaceholder.typicode.com/todos/2")
+            .then((msg) => {
+                msg.json().then((data) => {
+                    console.log("using data:", data);
+                });
+            });
+         async function fetchTodos() {
+        try {
+          let response = await fetch(
+            "https://jsonplaceholder.typicode.com/todos/2",
+            { method: "PUT", // GET ,PUT/ PATCH ,DELETE
+              headers:{
+                "content-type": "application/json"
+              },
+                body: JSON.stringify({
+                    title: "Order Pizza",
+                }),
+             }
+          );
+          let data = await response.json();
+          console.log("using await:", data.title);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      fetchTodos(); 
+    </script>
+</body>
+
+</html>

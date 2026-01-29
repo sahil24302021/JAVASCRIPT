@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Story Selector</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 600px;
+            background: #38bdf8;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #0f172a;
+            margin-bottom: 25px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            margin: 0 5px;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .scary { background: #ef4444; }
+        .funny { background: #f59e0b; }
+        .adventure { background: #22c55e; }
+
+        .story-box {
+            background: #e0f2fe;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            color: #0f172a;
+            min-height: 120px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Want to hear a short story?</h1>
+
+        <div class="buttons">
+            <button class="scary" onclick="showScary()">SCARY STORY</button>
+            <button class="funny" onclick="showFunny()">FUNNY STORY</button>
+            <button class="adventure" onclick="showAdventure()">ADVENTURE STORY</button>
+        </div>
+
+        <div class="story-box" id="story">
+            Click any button to read a story.
+        </div>
+    </div>
+
+    <script>
+        const storyBox = document.getElementById("story");
+
+        function showScary() {
+            storyBox.innerText =
+                "At midnight, Rohan heard footsteps outside his room. He locked the door and hid under his blanket. Suddenly, the footsteps stopped… and a whisper said his name.";
+        }
+
+        function showFunny() {
+            storyBox.innerText =
+                "Tom tried to impress his friends by riding a bicycle with no hands. Five seconds later, he crashed into a bush—earning applause and a nickname he’ll never forget.";
+        }
+
+        function showAdventure() {
+            storyBox.innerText =
+                "Lost in the heart of the Amazon rainforest, Sarah and Jake discovered an ancient temple. Dodging traps and decoding clues, they uncovered a secret that changed history forever.";
+        }
+    </script>
+
+</body>
+</html>
