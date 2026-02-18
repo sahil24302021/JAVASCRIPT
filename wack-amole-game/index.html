@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Mole Hunter</title>
+    <style>
+        :root {
+            --neon-blue: #00f2ff;
+            --neon-pink: #ff00ff;
+            --bg-dark: #0a0a12;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stat-box {
+            padding: 10px 20px;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            border-radius: 8px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 140px);
+            grid-template-rows: repeat(3, 140px);
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hole {
+            width: 140px;
+            height: 140px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #333;
+            box-shadow: inset 0 10px 20px #000;
+        }
+
+        .mole {
+            width: 100px;
+            height: 120px;
+            background: linear-gradient(to bottom, #ff00ff, #700070);
+            position: absolute;
+            bottom: -100%;
+            left: 20px;
+            border-radius: 50% 50% 10px 10px;
+            transition: all 0.15s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            cursor: crosshair;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* The Eyes */
+        .mole::before, .mole::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 30px;
+        }
+        .mole::before { left: 25px; }
+        .mole::after { right: 25px; }
+
+        .mole.up { bottom: 0; box-shadow: 0 0 20px var(--neon-pink); }
+
+        .controls { margin-top: 30px; }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            background: transparent;
+            border: 2px solid var(--neon-pink);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            background: var(--neon-pink);
+            box-shadow: 0 0 30px var(--neon-pink);
+        }
+
+        .hit-effect {
+            animation: shake 0.2s;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-3px, 0px) rotate(-1deg); }
+            40% { transform: translate(3px, 2px) rotate(1deg); }
+            100% { transform: translate(1px, -1px) rotate(0deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stats">
+        <div class="stat-box">Score: <span id="score">0</span></div>
+        <div class="stat-box">High: <span id="highScore">0</span></div>
+        <div class="stat-box">Time: <span id="timer">30</span>s</div>
+    </div>
+
+    <div class="game-grid" id="grid">
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+        <div class="hole"><div class="mole"></div></div>
+    </div>
+
+    <div class="controls">
+        <button id="startBtn">Initiate Hunt</button>
+    </div>
+
+    <script>
+        const moles = document.querySelectorAll('.mole');
+        const scoreBoard = document.querySelector('#score');
+        const highBoard = document.querySelector('#highScore');
+        const timerDisplay = document.querySelector('#timer');
+        const startBtn = document.querySelector('#startBtn');
+        const grid = document.querySelector('#grid');
+
+        let lastHole;
+        let timeUp = false;
+        let score = 0;
+        let timeLeft = 30;
+        let countdown;
+        let gameSpeed = 1000;
+
+        // Load High Score
+        highBoard.textContent = localStorage.getItem('moleHigh') || 0;
+
+        // Retro Synth Sounds using Web Audio API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(freq, type, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function randomTime(min, max) {
+            return Math.round(Math.random() * (max - min) + min);
+        }
+
+        function randomHole() {
+            const idx = Math.floor(Math.random() * moles.length);
+            const hole = moles[idx].parentElement;
+            if (hole === lastHole) return randomHole();
+            lastHole = hole;
+            return hole;
+        }
+
+        function peep() {
+            // Speed increases as score goes up
+            const currentMin = Math.max(300, 800 - (score * 10));
+            const currentMax = Math.max(500, 1200 - (score * 10));
+            
+            const time = randomTime(currentMin, currentMax);
+            const hole = randomHole();
+            const mole = hole.querySelector('.mole');
+            
+            mole.classList.add('up');
+
+            setTimeout(() => {
+                mole.classList.remove('up');
+                if (!timeUp) peep();
+            }, time);
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }
+
+        function startGame() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            score = 0;
+            timeLeft = 30;
+            timeUp = false;
+            scoreBoard.textContent = 0;
+            timerDisplay.textContent = timeLeft;
+            startBtn.style.display = 'none';
+            
+            peep();
+            countdown = setInterval(updateTimer, 1000);
+            playSound(440, 'sawtooth', 0.2);
+        }
+
+        function endGame() {
+            timeUp = true;
+            clearInterval(countdown);
+            startBtn.style.display = 'inline-block';
+            
+            const high = localStorage.getItem('moleHigh') || 0;
+            if (score > high) {
+                localStorage.setItem('moleHigh', score);
+                highBoard.textContent = score;
+                alert(`NEW HIGH SCORE: ${score}!`);
+            } else {
+                alert(`Game Over! Score: ${score}`);
+            }
+        }
+
+        function bonk(e) {
+            if(!e.isTrusted) return; 
+            
+            score++;
+            playSound(150, 'square', 0.1); // Low "thud" sound
+            this.classList.remove('up');
+            scoreBoard.textContent = score;
+            
+            // Visual feedback on the whole grid
+            grid.classList.add('hit-effect');
+            setTimeout(() => grid.classList.remove('hit-effect'), 200);
+        }
+
+        moles.forEach(mole => mole.addEventListener('click', bonk));
+        startBtn.addEventListener('click', startGame);
+
+    </script>
+</body>
+</html>
